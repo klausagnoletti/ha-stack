@@ -1,0 +1,51 @@
+version: "3"
+services:
+  homeassistant:
+    image: 'ghcr.io/home-assistant/home-assistant:stable'
+    container_name: homeassistant
+    restart: unless-stopped
+    ports:
+      - '8123:8123'
+    environment:
+      - TZ=CET
+    volumes:
+      - ./ha-config:/config
+    networks:
+      homeassistant_proxy:
+        ipv4_address: 172.20.0.4
+
+  npm:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: npm
+    restart: unless-stopped
+    ports:
+      # These ports are in format <host-port>:<container-port>
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      - '81:81' # Admin Web Port
+      # Add any other Stream port you want to expose
+      # - '21:21' # FTP
+
+    # Uncomment the next line if you uncomment anything in the section
+    # environment:
+      # Uncomment this if you want to change the location of 
+      # the SQLite DB file within the container
+      # DB_SQLITE_FILE: "/data/database.sqlite"
+
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
+    depends_on:
+      - 'homeassistant'
+    volumes:
+      - ./npm-config:/data
+      - ./letsencrypt:/etc/letsencrypt
+    networks:
+      homeassistant_proxy:
+        ipv4_address: 172.20.0.5
+
+networks:
+  homeassistant_proxy:
+    ipam:
+      driver: default
+      config:
+       - subnet: 172.20.0.0/24
