@@ -10,9 +10,6 @@ services:
       - TZ=CET
     volumes:
       - ./ha-config:/config
-    networks:
-      homeassistant_proxy:
-        ipv4_address: 172.20.0.4
 
   npm:
     image: 'jc21/nginx-proxy-manager:latest'
@@ -39,13 +36,3 @@ services:
     volumes:
       - ./npm-config:/data
       - ./letsencrypt:/etc/letsencrypt
-    networks:
-      homeassistant_proxy:
-        ipv4_address: 172.20.0.5
-
-networks:
-  homeassistant_proxy:
-    ipam:
-      driver: default
-      config:
-       - subnet: 172.20.0.0/24
